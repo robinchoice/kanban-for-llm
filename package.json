@@ -1,5 +1,5 @@
 {
-  "name": "kanban2yaml",
+  "name": "kanban-for-llm",
   "version": "1.0.0",
   "description": "Convert Kanban cards to YAML tickets for LLM-supported sprint processes",
   "main": "main.js",

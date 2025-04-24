@@ -5,7 +5,7 @@ import * as yaml from 'js-yaml';
 import * as path from 'path';
 import 'tslib';
 
-interface Kanban2YAMLSettings {
+interface KanbanForLLMSettings {
   outputDirectory: string;
   triggerTag: string;
   enableTwoWaySync: boolean;
@@ -13,7 +13,7 @@ interface Kanban2YAMLSettings {
   llmIntegration: LLMConfig;
 }
 
-const DEFAULT_SETTINGS: Kanban2YAMLSettings = {
+const DEFAULT_SETTINGS: KanbanForLLMSettings = {
   outputDirectory: '.sprint-tickets',
   triggerTag: 'llm',
   enableTwoWaySync: false,
@@ -24,8 +24,8 @@ const DEFAULT_SETTINGS: Kanban2YAMLSettings = {
   }
 };
 
-export default class Kanban2YAMLPlugin extends Plugin {
-  settings: Kanban2YAMLSettings = DEFAULT_SETTINGS;
+export default class KanbanForLLMPlugin extends Plugin {
+  settings: KanbanForLLMSettings = DEFAULT_SETTINGS;
   private llmProcessor: LLMProcessor = new LLMProcessor(DEFAULT_SETTINGS.llmIntegration);
 
   async onload() {
@@ -52,7 +52,7 @@ export default class Kanban2YAMLPlugin extends Plugin {
     });
 
     // Add settings tab
-    this.addSettingTab(new Kanban2YAMLSettingTab(this.app, this));
+    this.addSettingTab(new KanbanForLLMSettingTab(this.app, this));
 
     // Set up auto-sync if enabled
     if (this.settings.autoSyncInterval > 0) {
@@ -279,10 +279,10 @@ export default class Kanban2YAMLPlugin extends Plugin {
   }
 }
 
-class Kanban2YAMLSettingTab extends PluginSettingTab {
-  plugin: Kanban2YAMLPlugin;
+class KanbanForLLMSettingTab extends PluginSettingTab {
+  plugin: KanbanForLLMPlugin;
 
-  constructor(app: App, plugin: Kanban2YAMLPlugin) {
+  constructor(app: App, plugin: KanbanForLLMPlugin) {
     super(app, plugin);
     this.plugin = plugin;
   }
@@ -291,7 +291,7 @@ class Kanban2YAMLSettingTab extends PluginSettingTab {
     const { containerEl } = this;
     containerEl.empty();
 
-    containerEl.createEl('h2', { text: 'Kanban2YAML Settings' });
+    containerEl.createEl('h2', { text: 'Kanban for LLM Settings' });
 
     // Allgemeine Einstellungen
     containerEl.createEl('h3', { text: 'Allgemein' });

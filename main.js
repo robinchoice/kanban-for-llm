@@ -29,7 +29,7 @@ var __toModule = (module2) => {
 
 // src/main.ts
 __export(exports, {
-  default: () => Kanban2YAMLPlugin
+  default: () => KanbanForLLMPlugin
 });
 var import_obsidian = __toModule(require("obsidian"));
 
@@ -2923,7 +2923,7 @@ var DEFAULT_SETTINGS = {
     enabled: false
   }
 };
-var Kanban2YAMLPlugin = class extends import_obsidian.Plugin {
+var KanbanForLLMPlugin = class extends import_obsidian.Plugin {
   constructor() {
     super(...arguments);
     this.settings = DEFAULT_SETTINGS;
@@ -2947,7 +2947,7 @@ var Kanban2YAMLPlugin = class extends import_obsidian.Plugin {
       name: "Perform Two-Way Sync",
       callback: () => this.syncAll()
     });
-    this.addSettingTab(new Kanban2YAMLSettingTab(this.app, this));
+    this.addSettingTab(new KanbanForLLMSettingTab(this.app, this));
     if (this.settings.autoSyncInterval > 0) {
       this.registerInterval(window.setInterval(() => {
         this.syncAll();
@@ -2961,6 +2961,7 @@ var Kanban2YAMLPlugin = class extends import_obsidian.Plugin {
     await this.saveData(this.settings);
   }
   async convertKanbanToYAML() {
+    new import_obsidian.Notice("Konvertiere Kanban-Board zu YAML...");
     const activeFile = this.app.workspace.getActiveFile();
     if (!activeFile) {
       new import_obsidian.Notice("No active file");
@@ -2970,13 +2971,16 @@ var Kanban2YAMLPlugin = class extends import_obsidian.Plugin {
     const cards = this.parseKanbanCards(content);
     const tickets = this.convertCardsToTickets(cards);
     await this.saveTicketsToYAML(tickets);
+    new import_obsidian.Notice(`Kanban-Board erfolgreich zu YAML konvertiert. ${tickets.length} YAML-Dateien erstellt.`);
   }
   async syncYAMLToKanban() {
+    new import_obsidian.Notice("Synchronisiere YAML-Dateien mit Kanban-Board...");
     if (!this.settings.enableTwoWaySync) {
       new import_obsidian.Notice("Two-way sync is disabled. Please enable it in settings.");
       return;
     }
     const result = await this.performYAMLToKanbanSync();
+    new import_obsidian.Notice("YAML-Dateien erfolgreich mit Kanban-Board synchronisiert.");
     new import_obsidian.Notice(`Sync complete: ${result.cardsUpdated} cards updated`);
   }
   async syncAll() {
@@ -3074,6 +3078,7 @@ var Kanban2YAMLPlugin = class extends import_obsidian.Plugin {
     }
   }
   async performYAMLToKanbanSync() {
+    new import_obsidian.Notice("Starte Zwei-Wege-Synchronisation...");
     const outputDir = this.settings.outputDirectory;
     const outputPath = path.join(this.app.vault.configDir, outputDir);
     const files = this.app.vault.getFiles().filter((file) => file.path.startsWith(outputPath) && file.extension === "yaml");
@@ -3091,6 +3096,7 @@ var Kanban2YAMLPlugin = class extends import_obsidian.Plugin {
         }
       }
     }
+    new import_obsidian.Notice("Zwei-Wege-Synchronisation erfolgreich abgeschlossen.");
     return { cardsUpdated };
   }
   updateKanbanFromYAML(kanbanContent, ticket) {
@@ -3121,7 +3127,7 @@ var Kanban2YAMLPlugin = class extends import_obsidian.Plugin {
     return kanbanContent;
   }
 };
-var Kanban2YAMLSettingTab = class extends import_obsidian.PluginSettingTab {
+var KanbanForLLMSettingTab = class extends import_obsidian.PluginSettingTab {
   constructor(app, plugin) {
     super(app, plugin);
     this.plugin = plugin;
@@ -3129,40 +3135,59 @@ var Kanban2YAMLSettingTab = class extends import_obsidian.PluginSettingTab {
   display() {
     const { containerEl } = this;
     containerEl.empty();
-    containerEl.createEl("h2", { text: "Kanban2YAML Settings" });
-    new import_obsidian.Setting(containerEl).setName("Output Directory").setDesc("Directory where YAML tickets will be saved").addText((text) => text.setPlaceholder(".sprint-tickets").setValue(this.plugin.settings.outputDirectory).onChange(async (value) => {
+    containerEl.createEl("h2", { text: "Kanban for LLM Settings" });
+    containerEl.createEl("h3", { text: "Allgemein" });
+    new import_obsidian.Setting(containerEl).setName("Ausgabeverzeichnis").setDesc("Verzeichnis, in dem die YAML-Tickets gespeichert werden").addText((text) => text.setPlaceholder(".sprint-tickets").setValue(this.plugin.settings.outputDirectory).onChange(async (value) => {
       this.plugin.settings.outputDirectory = value;
       await this.plugin.saveSettings();
     }));
-    new import_obsidian.Setting(containerEl).setName("Trigger Tag").setDesc("Tag that triggers YAML conversion").addText((text) => text.setPlaceholder("llm").setValue(this.plugin.settings.triggerTag).onChange(async (value) => {
+    new import_obsidian.Setting(containerEl).setName("Trigger-Tag").setDesc("Tag, der die YAML-Konvertierung ausl\xF6st").addText((text) => text.setPlaceholder("llm").setValue(this.plugin.settings.triggerTag).onChange(async (value) => {
       this.plugin.settings.triggerTag = value;
       await this.plugin.saveSettings();
     }));
-    new import_obsidian.Setting(containerEl).setName("Enable Two-Way Sync").setDesc("Allow syncing changes from YAML back to Kanban").addToggle((toggle) => toggle.setValue(this.plugin.settings.enableTwoWaySync).onChange(async (value) => {
+    containerEl.createEl("h3", { text: "Synchronisierung" });
+    new import_obsidian.Setting(containerEl).setName("Zwei-Wege-Synchronisation aktivieren").setDesc("\xC4nderungen von YAML zur\xFCck zu Kanban synchronisieren").addToggle((toggle) => toggle.setValue(this.plugin.settings.enableTwoWaySync).onChange(async (value) => {
       this.plugin.settings.enableTwoWaySync = value;
       await this.plugin.saveSettings();
     }));
-    new import_obsidian.Setting(containerEl).setName("Auto-Sync Interval").setDesc("Interval in minutes for automatic sync (0 to disable)").addText((text) => text.setPlaceholder("0").setValue(this.plugin.settings.autoSyncInterval.toString()).onChange(async (value) => {
-      this.plugin.settings.autoSyncInterval = parseInt(value) || 0;
+    new import_obsidian.Setting(containerEl).setName("Automatische Synchronisierung").setDesc("Intervall in Minuten f\xFCr automatische Synchronisierung (0 zum Deaktivieren)").addText((text) => text.setPlaceholder("0").setValue(this.plugin.settings.autoSyncInterval.toString()).onChange(async (value) => {
+      const interval = parseInt(value);
+      if (isNaN(interval)) {
+        new import_obsidian.Notice("Bitte geben Sie eine g\xFCltige Zahl ein.");
+        return;
+      }
+      if (interval < 0) {
+        new import_obsidian.Notice("Das Intervall darf nicht negativ sein.");
+        return;
+      }
+      this.plugin.settings.autoSyncInterval = interval;
       await this.plugin.saveSettings();
     }));
-    containerEl.createEl("h3", { text: "LLM Integration" });
-    new import_obsidian.Setting(containerEl).setName("Enable LLM Integration").setDesc("Enable AI processing of tickets").addToggle((toggle) => toggle.setValue(this.plugin.settings.llmIntegration.enabled).onChange(async (value) => {
+    containerEl.createEl("h3", { text: "LLM-Integration" });
+    new import_obsidian.Setting(containerEl).setName("LLM-Integration aktivieren").setDesc("KI-Verarbeitung von Tickets aktivieren").addToggle((toggle) => toggle.setValue(this.plugin.settings.llmIntegration.enabled).onChange(async (value) => {
       this.plugin.settings.llmIntegration.enabled = value;
       await this.plugin.saveSettings();
     }));
-    new import_obsidian.Setting(containerEl).setName("LLM Provider").setDesc("Choose the LLM provider to use").addDropdown((dropdown) => dropdown.addOption("claude", "Claude").addOption("ollama", "Ollama").addOption("copilot", "GitHub Copilot").setValue(this.plugin.settings.llmIntegration.provider).onChange(async (value) => {
+    new import_obsidian.Setting(containerEl).setName("LLM-Provider").setDesc("W\xE4hlen Sie den LLM-Provider").addDropdown((dropdown) => dropdown.addOption("claude", "Claude").addOption("ollama", "Ollama").addOption("copilot", "GitHub Copilot").setValue(this.plugin.settings.llmIntegration.provider).onChange(async (value) => {
       this.plugin.settings.llmIntegration.provider = value;
       await this.plugin.saveSettings();
     }));
     if (this.plugin.settings.llmIntegration.provider === "claude") {
-      new import_obsidian.Setting(containerEl).setName("Claude API Key").setDesc("Your Claude API key").addText((text) => text.setPlaceholder("Enter your API key").setValue(this.plugin.settings.llmIntegration.apiKey || "").onChange(async (value) => {
+      new import_obsidian.Setting(containerEl).setName("Claude API-Schl\xFCssel").setDesc("Ihr Claude API-Schl\xFCssel").addText((text) => text.setPlaceholder("Geben Sie Ihren API-Schl\xFCssel ein").setValue(this.plugin.settings.llmIntegration.apiKey || "").onChange(async (value) => {
+        if (!value) {
+          new import_obsidian.Notice("Bitte geben Sie einen API-Schl\xFCssel ein.");
+          return;
+        }
         this.plugin.settings.llmIntegration.apiKey = value;
         await this.plugin.saveSettings();
       }));
     }
     if (this.plugin.settings.llmIntegration.provider === "ollama") {
-      new import_obsidian.Setting(containerEl).setName("Ollama Endpoint").setDesc("URL of your Ollama instance").addText((text) => text.setPlaceholder("http://localhost:11434").setValue(this.plugin.settings.llmIntegration.endpoint || "").onChange(async (value) => {
+      new import_obsidian.Setting(containerEl).setName("Ollama-Endpunkt").setDesc("URL Ihrer Ollama-Instanz").addText((text) => text.setPlaceholder("http://localhost:11434").setValue(this.plugin.settings.llmIntegration.endpoint || "").onChange(async (value) => {
+        if (!value) {
+          new import_obsidian.Notice("Bitte geben Sie einen Endpunkt ein.");
+          return;
+        }
         this.plugin.settings.llmIntegration.endpoint = value;
         await this.plugin.saveSettings();
       }));

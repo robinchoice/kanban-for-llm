@@ -9,7 +9,7 @@ fi
 
 VAULT_PATH="$1"
 # Ensure the plugin directory path is quoted to handle spaces
-PLUGIN_DIR="$VAULT_PATH/.obsidian/plugins/kanban2yaml"
+PLUGIN_DIR="$VAULT_PATH/.obsidian/plugins/kanban-for-llm"
 
 # Create plugin directory if it doesn't exist (use quotes)
 echo "Creating directory: $PLUGIN_DIR"
@@ -32,4 +32,4 @@ if [ -f "styles.css" ]; then
 fi
 
 echo "Plugin installed successfully!"
-echo "Please restart Obsidian and enable the Kanban2YAML plugin in Settings > Community Plugins." 
+echo "Please restart Obsidian and enable the Kanban for LLM plugin in Settings > Community Plugins." 
