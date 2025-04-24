@@ -1,0 +1,9 @@
+{
+  "id": "kanban2yaml",
+  "name": "Kanban for LLM",
+  "version": "1.0.0",
+  "minAppVersion": "0.15.0",
+  "description": "Convert Kanban cards to YAML tickets for LLM-supported sprint processes",
+  "author": "robinchoice",
+  "isDesktopOnly": false
+} 
